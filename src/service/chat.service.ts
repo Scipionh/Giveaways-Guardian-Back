@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { CommandsService } from './commands.service';
 import { TEXTS } from '../config/texts';
 import { GuardiansService } from '../guardians/guardians.service';
+import { channelId, oauthPwd } from '../auth-config';
 
 @Injectable()
 export class ChatService {
@@ -19,8 +20,8 @@ export class ChatService {
       reconnect: true
     },
     identity: {
-      username: 'captainheavyx',
-      password: 'oauth:xzn1fznnkfuyuji85dvc5o32w9420a'
+      username: channelId,
+      password: oauthPwd
     },
     channels: [
       'iheavyx'
