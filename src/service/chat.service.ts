@@ -8,18 +8,31 @@ import { Injectable } from '@nestjs/common';
 import { CommandsService } from './commands.service';
 import { TEXTS } from '../config/texts';
 import { GuardiansService } from '../guardians/guardians.service';
-import { opts } from '../opts';
 
 @Injectable()
 export class ChatService {
   private client : tmi.Client;
+  private opts: Options = {
+    options: { debug: true },
+    connection: {
+      secure: true,
+      reconnect: true
+    },
+    identity: {
+      username: 'captainheavyx',
+      password: 'oauth:xzn1fznnkfuyuji85dvc5o32w9420a'
+    },
+    channels: [
+      'iheavyx'
+    ]
+  }
 
   constructor(
     private readonly usersService: UsersService,
     private readonly commandsUtils: CommandsUtils,
     private readonly commandsService: CommandsService,
     private readonly guardiansService: GuardiansService) {
-    this.client = new tmi.Client(opts);
+    this.client = new tmi.Client(this.opts);
     this.listenToConnection();
   }
 
