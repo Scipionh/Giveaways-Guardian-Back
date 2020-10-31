@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ChatService } from './service/chat.service';
+import { ChatService } from './chat-bot/service/chat.service';
 
 @Controller()
 export class AppController {
