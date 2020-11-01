@@ -52,6 +52,7 @@ export class ChatService {
   listenToChat = (): void => {
     this.client.on('message', (target: any, userContext: UserContext, msg: any, self: any) => {
       if(self) return;
+      console.log('GUCCI_userContext', userContext);
       if(!this.commandsUtils.isValidCommand(msg, userContext)) return;
 
       const user = new User(userContext);
