@@ -5,9 +5,9 @@ export class PermissionService {
     let permissionLevel: number;
 
     if(userContext == null) return;
-    if(userContext.badges.brodcaster) {
+    if(userContext.badges.contains('broadcaster')) {
       permissionLevel = 5;
-    } else if(userContext.badges.moderator) {
+    } else if(userContext.badges.contains('moderator')) {
       permissionLevel = 3;
     }
 

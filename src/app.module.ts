@@ -7,7 +7,7 @@ import { UsersModule } from './chat-bot/users/users.module';
 import { CommandsUtils } from './chat-bot/utils/commands-utils';
 import { GuardiansModule } from './chat-bot/guardians/guardians.module';
 import { CommandsService } from './chat-bot/service/commands.service';
-import { PubSubService } from './pub-sub/service/pub-sub.service';
+import { AuthService } from './shared/auth.service';
 
 @Module({
   imports: [
@@ -16,6 +16,6 @@ import { PubSubService } from './pub-sub/service/pub-sub.service';
     GuardiansModule
   ],
   controllers: [AppController],
-  providers: [AppService, ChatService, CommandsUtils, CommandsService, PubSubService],
+  providers: [AppService, ChatService, CommandsUtils, CommandsService, AuthService],
 })
 export class AppModule {}
