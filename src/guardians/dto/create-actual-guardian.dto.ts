@@ -5,4 +5,5 @@ export class CreateActualGuardianDto {
   readonly currentHealth: number;
   readonly numberOfHits: number;
   readonly isDead: boolean;
+  readonly isRedeemed: boolean;
 }

@@ -4,15 +4,18 @@ import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
 import { clientId, secret } from '../auth-config';
 import { ApiClient } from 'twitch';
 import { PubSubClient, PubSubSubscriptionMessage } from 'twitch-pubsub-client';
-import { ChatClient } from 'twitch-chat-client';
-import { TwitchPrivateMessage } from 'twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage';
+import { ChatClientService } from './chat-client.service';
 
 @Injectable()
-export class AuthService {
+export class PubsubService {
   public apiClient;
   public pubSubClient;
   public chatClient;
   public authProvider;
+
+  constructor(private readonly chatClientService: ChatClientService) {
+    this.chatClient = chatClientService.chatClient;
+  }
 
   public async pubSubConnect() {
     const tokenData = JSON.parse(fs.readFileSync('./src/tokens.json', 'UTF-8'));
@@ -34,9 +37,7 @@ export class AuthService {
     );
 
     await this.createApiClient(this.authProvider);
-    // await this.createChatClient(this.authProvider);
     await this.createPubSubClient();
-    // this.listenToChat();
     this.listenToRedemption();
   }
 
@@ -49,23 +50,10 @@ export class AuthService {
     await this.pubSubClient.registerUserListener(this.apiClient);
   }
 
-  private async createChatClient(authProvider) {
-    this.chatClient = new ChatClient(authProvider, {channels: ['iheavyx']});
-    await this.chatClient.connect();
-  }
-
   private listenToRedemption = (): void => {
     this.pubSubClient.onRedemption(140398983, (message: PubSubSubscriptionMessage) => {
-      this.chatClient.say('iheavyx', 'SPORT');
-      console.log('GUCCI_channelPointUsed', message['_data'].data.redemption);
-    });
-  }
-
-  private listenToChat = (): void => {
-    this.chatClient.onMessage((channel: string, user: string, message: string, msg: TwitchPrivateMessage) => {
-      this.chatClient.say(channel, 'Pong!');
-      const mapToObject = [...msg.userInfo['_userData']].reduce((obj, [key, value]) => (obj[key] = value, obj), {});
-      console.log('GUCCI_onMessage', channel, user, message, mapToObject);
+      this.chatClient.say(this.chatClientService.channel, 'SPORT');
+      console.log('GUCCI_channelPointUsed');
     });
   }
 }

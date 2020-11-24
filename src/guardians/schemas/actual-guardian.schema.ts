@@ -20,6 +20,9 @@ export class ActualGuardianS extends Document {
 
   @Prop()
   isDead: boolean;
+
+  @Prop()
+  isRedeemed: boolean;
 }
 
 export const ActualGuardianSchema = SchemaFactory.createForClass(ActualGuardianS);

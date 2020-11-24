@@ -20,7 +20,7 @@ export class User {
     this.id = userContext['user-id'];
     this.foughtGuardians = foughtGuardians;
     this.commandsCooldown = commandsCooldown;
-    this.isBroadcaster = !!userContext.badges.contains('broadcaster');
+    this.isBroadcaster = !!userContext.badges.includes('broadcaster');
   }
 
   public toCreateUserDto(): CreateUserDto {

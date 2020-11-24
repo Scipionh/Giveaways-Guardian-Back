@@ -71,7 +71,7 @@ export class UsersService {
 
   private async updateFoughtGuardians(user: User, guardianId: string) {
     this.userModel.findOne({id: user.id}).exec().then(u => {
-      u.update({$push: {foughtGuardians: guardianId}}).exec();
+      u.updateOne({$push: {foughtGuardians: guardianId}}).exec();
     })
   }
 
@@ -85,14 +85,14 @@ export class UsersService {
 
   private async initializeCommandCooldown(userId: string, commandName: string) {
     return await this.userModel.findOne({id: userId}).exec().then(x => {
-      x.update({commandsCooldown: {command: commandName, lastUsage: Moment().format()}}).exec();
+      x.updateOne({commandsCooldown: {command: commandName, lastUsage: Moment().format()}}).exec();
       return x.save();
     });
   }
 
   private async updateCommandCooldown(userId: string, commandName: string) {
     return await this.userModel.findOne({id: userId}).exec().then(x => {
-      x.update({'commandsCooldown.command': commandName}, {$set: {'commandsCooldown.$.lastUsage': Moment().format()}}).exec();
+      x.collection.findOneAndUpdate({"commandsCooldown.command": commandName}, {$set: {"commandsCooldown.$.lastUsage": Moment().format()}});
       return x.save();
     });
   }

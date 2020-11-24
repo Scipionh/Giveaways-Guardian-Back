@@ -1,6 +1,6 @@
 export interface UserContext {
   'badge-info'?: any;
-  badges?: any;
+  badges?: string;
   'client-nonce'?: string;
   color?: string;
   'display-name'?: string;
