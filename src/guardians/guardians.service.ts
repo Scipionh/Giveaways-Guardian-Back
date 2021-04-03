@@ -9,12 +9,14 @@ import { CreateActualGuardianDto } from './dto/create-actual-guardian.dto';
 import { User } from '../users/users.model';
 import { ActualGuardian } from './actual-guardian.model';
 import { Participant } from '../models/participant';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class GuardiansService {
   constructor(
     @InjectModel(GuardianS.name) private readonly guardianModel: Model<GuardianS>,
-    @InjectModel(ActualGuardianS.name) private readonly actualGuardianModel: Model<ActualGuardianS>
+    @InjectModel(ActualGuardianS.name) private readonly actualGuardianModel: Model<ActualGuardianS>,
+    private readonly usersService: UsersService
   ) {}
 
   guardian: ActualGuardian;
@@ -22,6 +24,28 @@ export class GuardiansService {
   async create(createGuardianDto: CreateGuardianDto): Promise<GuardianS> {
     const createdGuardian = new this.guardianModel(createGuardianDto);
     return createdGuardian.save();
+  }
+
+  kick(userId: string): void {
+    this.usersService.canUseCommand(userId, 'kick', 5).then(y => {
+      console.log('GUCCI_canUseCommand', y);
+      if(y) {
+        this.isDead().then(w => {
+          console.log('GUCCI_isDead', w);
+          if(!w) {
+            const damageDealt = Math.floor(Math.random() * 6) + 1;
+            this.removeHealth(damageDealt).then(x => {
+              this.usersService.updateLastUsage(userId, 'kick').then(() => {
+                this.getCurrentId().then(g => {
+                  this.usersService.addParticipation(userId, g);
+                  this.addParticipant(userId, damageDealt, g);
+                })
+              })
+            })
+          }
+        })
+      }
+    })
   }
 
   async createActualGuardian(createGuardianDto: GuardianS): Promise<ActualGuardianS> {
@@ -46,16 +70,18 @@ export class GuardiansService {
     });
   }
 
-  async addParticipant(user: User, damageDealt: number, guardianId: string) {
+  async addParticipant(userId: string, damageDealt: number, guardianId: string) {
     return this.getById(guardianId).then(guardian => {
-        if(!guardian.participants.some(el => el.userId === user.id)) {
-          const participant: Participant = {userId: user.id, username: user.displayName, damageDealt: damageDealt, numberOfHits: 1};
-          guardian.updateOne({ $push: {participants: participant}}).exec();
-          return guardian.save();
+        if(!guardian.participants.some(el => el.userId === userId)) {
+          this.usersService.getById(userId).then(u => {
+            const participant: Participant = {userId: userId, username: u.displayName, damageDealt: damageDealt, numberOfHits: 1};
+            guardian.updateOne({ $push: {participants: participant}}).exec();
+            return guardian.save();
+          })
         } else {
-          guardian.collection.findOne({"participants.userId": user.id}).then(x => {
-            const value = x.participants.find(y => y.userId = user.id)
-            guardian.collection.updateOne({"participants.userId": user.id},
+          guardian.collection.findOne({"participants.userId": userId}).then(x => {
+            const value = x.participants.find(y => y.userId = userId)
+            guardian.collection.updateOne({"participants.userId": userId},
               {$set: {"participants.$.damageDealt": value.damageDealt + damageDealt, "participants.$.numberOfHits": value.numberOfHits + 1}})
           })
           return guardian.save();

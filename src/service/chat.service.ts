@@ -42,9 +42,6 @@ export class ChatService {
       const commandName = this.commandsUtils.getCommandName(message, userContext);
       const commandParams = this.commandsUtils.getCommandParams(message);
 
-      console.log('GUCCI_guardian', this.guardiansService?.guardian, !!this.guardiansService?.guardian);
-      console.log('GUCCI_isDead', this.guardiansService?.guardian?.isDead);
-
       if((!this.guardiansService?.guardian || this.guardiansService?.guardian?.isDead) && commandName !== 'instantiate' && commandName !== 'bitch') {
         this.chatClient.say(this.chatClientService.channel, TEXTS.noGuardian);
         return;
@@ -67,8 +64,8 @@ export class ChatService {
                   this.guardiansService.removeHealth(damageDealt).then(x => {
                     this.usersService.updateLastUsage(user.id, 'kick').then(() => {
                       this.guardiansService.getCurrentId().then(g => {
-                        this.usersService.addParticipation(user, g);
-                        this.guardiansService.addParticipant(user, damageDealt, g);
+                        this.usersService.addParticipation(user.id, g);
+                        this.guardiansService.addParticipant(user.id, damageDealt, g);
                       })
                     })
                   })

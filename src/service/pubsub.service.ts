@@ -18,7 +18,7 @@ export class PubsubService {
   }
 
   public async pubSubConnect() {
-    const tokenData = JSON.parse(fs.readFileSync('./src/tokens.json', 'UTF-8'));
+    const tokenData = JSON.parse(fs.readFileSync('./src/config/tokens.json', 'UTF-8'));
     this.authProvider = new RefreshableAuthProvider(
       new StaticAuthProvider(clientId, tokenData.accessToken),
       {
@@ -31,7 +31,7 @@ export class PubsubService {
             refreshToken,
             expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
           };
-          await fs.promises.writeFile('./src/tokens.json', JSON.stringify(newTokenData, null, 4), 'UTF-8');
+          await fs.promises.writeFile('./src/config/tokens.json', JSON.stringify(newTokenData, null, 4), 'UTF-8');
         }
       }
     );

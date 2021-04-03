@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { GuardiansService } from './guardians.service';
 import { GuardianS } from './schemas/guardian.schema';
 import { CreateGuardianDto } from './dto/create-guardian.dto';
 import { log } from 'util';
 
 @Controller('guardians')
-export class GuardiansController {h
+export class GuardiansController {
   constructor(private readonly guardiansService: GuardiansService) {}
 
   @Post()
@@ -16,5 +16,10 @@ export class GuardiansController {h
   @Get()
   async findAll(): Promise<GuardianS[]> {
     return await this.guardiansService.findAll();
+  }
+
+  @Get(':userId')
+  kick(@Param('userId') userId: string): void {
+    return this.guardiansService.kick(userId);
   }
 }

@@ -10,7 +10,7 @@ export class ChatClientService {
   public channel = 'iheavyx';
 
   constructor() {
-    const tokenData = JSON.parse(fs.readFileSync('./src/tokens.json', 'UTF-8'));
+    const tokenData = JSON.parse(fs.readFileSync('./src/config/tokens.json', 'UTF-8'));
     const authProvider = new RefreshableAuthProvider(
       new StaticAuthProvider(clientId, tokenData.accessToken),
       {
