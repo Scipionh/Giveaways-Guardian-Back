@@ -23,7 +23,7 @@ export class ChatClientService {
             refreshToken,
             expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
           };
-          await fs.promises.writeFile('./src/tokens.json', JSON.stringify(newTokenData, null, 4), 'UTF-8');
+          await fs.promises.writeFile('./src/config/tokens.json', JSON.stringify(newTokenData, null, 4), 'UTF-8');
         }
       }
     );

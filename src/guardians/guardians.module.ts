@@ -6,6 +6,7 @@ import { GuardiansService } from './guardians.service';
 import { ActualGuardianS, ActualGuardianSchema } from './schemas/actual-guardian.schema';
 import { UsersService } from '../users/users.service';
 import { UserS, UserSchema } from '../users/schemas/user.schema';
+import { ChatClientService } from '../service/chat-client.service';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -15,7 +16,7 @@ import { UserS, UserSchema } from '../users/schemas/user.schema';
     ])
   ],
   controllers: [GuardiansController],
-  providers: [GuardiansService, UsersService],
+  providers: [GuardiansService, UsersService, ChatClientService],
   exports: [GuardiansService]
 })
 export class GuardiansModule {}

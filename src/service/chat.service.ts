@@ -54,7 +54,8 @@ export class ChatService {
           break;
         }
         case "kick": {
-          this.usersService.canUseCommand(user.id, 'kick', 5).then(y => {
+          this.guardiansService.kick(user.id);
+          /*this.usersService.canUseCommand(user.id, 'kick', 5).then(y => {
             console.log('GUCCI_canUseCommand', y);
             if(y) {
               this.guardiansService.isDead().then(w => {
@@ -76,7 +77,7 @@ export class ChatService {
                 this.chatClient.say(this.chatClientService.channel, `Tu dois encore attendre ${h} avant de pouvoir frapper le gardien à nouveau ${user.displayName} !!`)
               })
             }
-          })
+          })*/
           break;
         }
         case "stats": {

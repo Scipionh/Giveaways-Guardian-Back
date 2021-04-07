@@ -10,14 +10,20 @@ import { User } from '../users/users.model';
 import { ActualGuardian } from './actual-guardian.model';
 import { Participant } from '../models/participant';
 import { UsersService } from '../users/users.service';
+import { ChatClientService } from '../service/chat-client.service';
 
 @Injectable()
 export class GuardiansService {
+  private chatClient;
+
   constructor(
     @InjectModel(GuardianS.name) private readonly guardianModel: Model<GuardianS>,
     @InjectModel(ActualGuardianS.name) private readonly actualGuardianModel: Model<ActualGuardianS>,
-    private readonly usersService: UsersService
-  ) {}
+    private readonly usersService: UsersService,
+    private readonly chatClientService: ChatClientService
+  ) {
+    this.chatClient = this.chatClientService.chatClient;
+  }
 
   guardian: ActualGuardian;
 
@@ -43,6 +49,11 @@ export class GuardiansService {
               })
             })
           }
+        })
+      } else {
+        this.usersService.getRemainingTime(userId, 'kick').then(h => {
+          console.log("GUCCI");
+          this.chatClient.say(this.chatClientService.channel, `Tu dois encore attendre ${h} avant de pouvoir frapper le gardien à nouveau !!`)
         })
       }
     })
