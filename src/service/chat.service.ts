@@ -4,9 +4,9 @@ import { Injectable } from '@nestjs/common';
 import { CommandsService } from './commands.service';
 import { GuardiansService } from '../guardians/guardians.service';
 import { TwitchPrivateMessage } from 'twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage';
-import { User } from '../users/users.model';
 import { TEXTS } from '../config/texts';
 import { ChatClientService } from './chat-client.service';
+import { User } from "../users/schemas/user.schema";
 
 @Injectable()
 export class ChatService {

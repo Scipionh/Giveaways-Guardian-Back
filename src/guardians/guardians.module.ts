@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { GuardianS, GuardianSchema } from './schemas/guardian.schema';
+import { Guardian, GuardianSchema } from './schemas/guardian.schema';
 import { GuardiansController } from './guardians.controller';
 import { GuardiansService } from './guardians.service';
-import { ActualGuardianS, ActualGuardianSchema } from './schemas/actual-guardian.schema';
+import { ActualGuardian, ActualGuardianSchema } from './schemas/actual-guardian.schema';
 import { UsersService } from '../users/users.service';
-import { UserS, UserSchema } from '../users/schemas/user.schema';
+import { User, UserSchema } from '../users/schemas/user.schema';
 import { ChatClientService } from '../service/chat-client.service';
 
 @Module({
   imports: [MongooseModule.forFeature([
-    { name: GuardianS.name, schema: GuardianSchema },
-    { name: UserS.name, schema: UserSchema },
-    { name: ActualGuardianS.name, schema: ActualGuardianSchema }
+    { name: Guardian.name, schema: GuardianSchema },
+    { name: User.name, schema: UserSchema },
+    { name: ActualGuardian.name, schema: ActualGuardianSchema }
     ])
   ],
   controllers: [GuardiansController],

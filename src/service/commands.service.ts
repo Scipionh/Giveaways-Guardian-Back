@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Guardian } from '../guardians/guardians.model';
-import * as tmi from 'tmi.js'
 import { GuardiansService } from '../guardians/guardians.service';
 import { TEXTS } from '../config/texts';
-import { ActualGuardian } from '../guardians/actual-guardian.model';
 import { ChatClientService } from './chat-client.service';
+import { Guardian } from "../guardians/schemas/guardian.schema";
+import { ActualGuardian } from "../guardians/schemas/actual-guardian.schema";
 
 @Injectable()
 export class CommandsService {
@@ -13,10 +12,6 @@ export class CommandsService {
   constructor(private readonly guardiansService: GuardiansService, private readonly chatClientService: ChatClientService) {
     this.chatClient = this.chatClientService.chatClient;
   }
-
-  /* kick(user: User, guardian: Guardian, client: tmi.Client, target: any) {
-
-  } */
 
   instantiate(commandParams: string[]) {
     this.guardiansService.hasGuardianInProgress().then(inProgress => {

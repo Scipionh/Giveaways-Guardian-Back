@@ -1,13 +1,10 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { GuardianS } from './schemas/guardian.schema';
+import { Guardian, GuardianDocument } from "./schemas/guardian.schema";
 import { CreateGuardianDto } from './dto/create-guardian.dto';
-import { ActualGuardianS } from './schemas/actual-guardian.schema';
-import { Guardian } from './guardians.model';
+import { ActualGuardian, ActualGuardianDocument } from "./schemas/actual-guardian.schema";
 import { CreateActualGuardianDto } from './dto/create-actual-guardian.dto';
-import { User } from '../users/users.model';
-import { ActualGuardian } from './actual-guardian.model';
 import { Participant } from '../models/participant';
 import { UsersService } from '../users/users.service';
 import { ChatClientService } from '../service/chat-client.service';
@@ -17,8 +14,8 @@ export class GuardiansService {
   private chatClient;
 
   constructor(
-    @InjectModel(GuardianS.name) private readonly guardianModel: Model<GuardianS>,
-    @InjectModel(ActualGuardianS.name) private readonly actualGuardianModel: Model<ActualGuardianS>,
+    @InjectModel(Guardian.name) private readonly guardianModel: Model<GuardianDocument>,
+    @InjectModel(ActualGuardian.name) private readonly actualGuardianModel: Model<ActualGuardianDocument>,
     private readonly usersService: UsersService,
     private readonly chatClientService: ChatClientService
   ) {
@@ -27,7 +24,7 @@ export class GuardiansService {
 
   guardian: ActualGuardian;
 
-  async create(createGuardianDto: CreateGuardianDto): Promise<GuardianS> {
+  async create(createGuardianDto: CreateGuardianDto): Promise<Guardian> {
     const createdGuardian = new this.guardianModel(createGuardianDto);
     return createdGuardian.save();
   }
@@ -59,7 +56,7 @@ export class GuardiansService {
     })
   }
 
-  async createActualGuardian(createGuardianDto: GuardianS): Promise<ActualGuardianS> {
+  async createActualGuardian(createGuardianDto: Guardian): Promise<ActualGuardian> {
     const actualGuardian: CreateActualGuardianDto = {
       actualGuardianId: createGuardianDto.id,
       name: createGuardianDto.name,
@@ -73,7 +70,7 @@ export class GuardiansService {
     return createdActualGuardian.save();
   }
 
-  async removeHealth(damageDealt: number): Promise<ActualGuardianS> {
+  async removeHealth(damageDealt: number): Promise<ActualGuardian> {
     return await this.actualGuardianModel.findOne().exec().then(x => {
       console.log('GUCCI_removeHealth', x);
       x.updateOne({currentHealth: (x.currentHealth - damageDealt), numberOfHits: x.numberOfHits++}).exec();
@@ -118,11 +115,11 @@ export class GuardiansService {
     })
   }
 
-  async findAll(): Promise<GuardianS[]> {
+  async findAll(): Promise<Guardian[]> {
     return this.guardianModel.find().exec();
   }
 
-  async getById(guardianId: string): Promise<GuardianS> {
+  async getById(guardianId: string): Promise<GuardianDocument> {
     return this.guardianModel.findById(guardianId).exec();
   }
 
@@ -130,7 +127,7 @@ export class GuardiansService {
     return this.getActualGuardian().then(x => x.actualGuardianId);
   }
 
-  private async getActualGuardian(): Promise<ActualGuardianS>{
+  private async getActualGuardian(): Promise<ActualGuardian>{
     return this.actualGuardianModel.findOne().exec();
   }
 

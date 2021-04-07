@@ -1,8 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Guardian } from "./guardian.schema";
+
+export type ActualGuardianDocument = ActualGuardian & Document;
 
 @Schema({collection: 'actualGuardian'})
-export class ActualGuardianS extends Document {
+export class ActualGuardian {
+  id: string;
+
   @Prop()
   actualGuardianId: string;
 
@@ -23,6 +28,16 @@ export class ActualGuardianS extends Document {
 
   @Prop()
   isRedeemed: boolean;
+
+  constructor(guardian: Guardian, isDead: boolean, isRedeemed: boolean) {
+    this.id = guardian.id;
+    this.name = guardian.name;
+    this.health = guardian.health;
+    this.currentHealth = guardian.health;
+    this.numberOfHits = guardian.numberOfHits;
+    this.isDead = isDead;
+    this.isRedeemed = isRedeemed;
+  }
 }
 
-export const ActualGuardianSchema = SchemaFactory.createForClass(ActualGuardianS);
+export const ActualGuardianSchema = SchemaFactory.createForClass(ActualGuardian);
