@@ -85,7 +85,7 @@ export class UsersService {
 
   private async initializeCommandCooldown(userId: string, commandName: string) {
     return await this.userModel.findOne({id: userId}).exec().then(x => {
-      x.updateOne({commandsCooldown: {command: commandName, lastUsage: Moment().format()}}).exec();
+      x.updateOne({$push: {commandsCooldown: {command: commandName, lastUsage: Moment().format()}}}).exec();
       return x.save();
     });
   }
