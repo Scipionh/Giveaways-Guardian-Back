@@ -1,5 +1,3 @@
-import { Cooldown } from '../../models/cooldown';
-
 export class CreateUserDto {
   readonly id: string;
   readonly username: string;
@@ -7,5 +5,5 @@ export class CreateUserDto {
   readonly isModerator: boolean;
   readonly isSubscriber: boolean;
   readonly foughtGuardians: string[];
-  readonly commandsCooldown: Cooldown[];
+  readonly hitPoints: number;
 }

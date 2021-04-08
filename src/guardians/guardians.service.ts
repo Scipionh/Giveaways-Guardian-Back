@@ -48,27 +48,14 @@ export class GuardiansService {
   }
 
   kick(userId: string): void {
-    this.usersService.canUseCommand(userId, 'kick', 5).then(y => {
-      console.log('GUCCI_canUseCommand', y);
-      if(y) {
-        this.isDead().then(w => {
-          console.log('GUCCI_isDead', w);
-          if(!w) {
-            const damageDealt = Math.floor(Math.random() * 6) + 1;
-            this.removeHealth(damageDealt).then(x => {
-              this.usersService.updateLastUsage(userId, 'kick').then(() => {
-                this.getCurrentId().then(g => {
-                  this.usersService.addParticipation(userId, g);
-                  this.addParticipant(userId, damageDealt, g);
-                })
-              })
-            })
-          }
-        })
-      } else {
-        this.usersService.getRemainingTime(userId, 'kick').then(h => {
-          console.log("GUCCI");
-          this.chatClient.say(this.chatClientService.channel, `Tu dois encore attendre ${h} avant de pouvoir frapper le gardien à nouveau !!`)
+    this.isDead().then(isDead => {
+      if(!isDead) {
+        const damageDealt = Math.floor(Math.random() * 6) + 1;
+        this.removeHealth(damageDealt).then(x => {
+          this.getCurrentId().then(g => {
+            this.usersService.addParticipation(userId, g);
+            this.addParticipant(userId, damageDealt, g);
+          })
         })
       }
     })
@@ -90,7 +77,6 @@ export class GuardiansService {
 
   async removeHealth(damageDealt: number): Promise<ActualGuardian> {
     return await this.actualGuardianModel.findOne().exec().then(x => {
-      console.log('GUCCI_removeHealth', x);
       x.updateOne({currentHealth: (x.currentHealth - damageDealt), numberOfHits: x.numberOfHits++}).exec();
       return x.save();
     });

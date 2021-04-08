@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
 import * as Moment from 'moment'
-import { Cooldown } from '../models/cooldown';
 
 @Injectable()
 export class UsersService {
@@ -27,37 +26,10 @@ export class UsersService {
     return this.userModel.findOneAndUpdate({id: userId}, payload).exec()
   }
 
-  async canUseCommand(userId: string, commandName: string, cooldown: number): Promise<boolean> {
-    return this.getCooldownCommand(userId, commandName).then(commandCooldown => {
-      if(!commandCooldown) return true;
-      const date = Moment(commandCooldown.lastUsage);
-      return parseInt(Moment(Moment().diff(date)).format("m")) >= cooldown;
-    });
-  }
-
-  async updateLastUsage(userId: string, commandName: string) {
-    this.getCooldownCommand(userId, commandName).then(commandCooldown => {
-      if(!commandCooldown) {
-        return this.initializeCommandCooldown(userId, commandName);
-      } else {
-        return this.updateCommandCooldown(userId, commandName)
-      }
-    })
-  }
-
   async addParticipation(userId: string, guardianId: string) {
     this.getFoughtGuardiansList(userId).then(x => {
       if(x.indexOf(guardianId) == -1) {
         this.updateFoughtGuardians(userId, guardianId);
-      }
-    })
-  }
-
-  async getRemainingTime(userId: string, commandName: string): Promise<string> {
-    return this.getCooldownCommand(userId, commandName).then(c => {
-      if(c) {
-        const endDate = Moment(c.lastUsage).add(5, 'minutes');
-        return Moment(endDate.diff(Moment())).format("m[m] s[s]")
       }
     })
   }
@@ -72,27 +44,5 @@ export class UsersService {
     this.userModel.findOne({id: userId}).exec().then(u => {
       u.updateOne({$push: {foughtGuardians: guardianId}}).exec();
     })
-  }
-
-  private async getCooldownCommand(userId: string, commandName: string): Promise<Cooldown> {
-    return this.userModel.findOne({id: userId}).exec().then(x => {
-      if(x) {
-        return x.commandsCooldown.find(y => y.command === commandName)
-      }
-    });
-  }
-
-  private async initializeCommandCooldown(userId: string, commandName: string) {
-    return await this.userModel.findOne({id: userId}).exec().then(x => {
-      x.updateOne({$push: {commandsCooldown: {command: commandName, lastUsage: Moment().format()}}}).exec();
-      return x.save();
-    });
-  }
-
-  private async updateCommandCooldown(userId: string, commandName: string) {
-    return await this.userModel.findOne({id: userId}).exec().then(x => {
-      x.collection.findOneAndUpdate({"commandsCooldown.command": commandName}, {$set: {"commandsCooldown.$.lastUsage": Moment().format()}});
-      return x.save();
-    });
   }
 }

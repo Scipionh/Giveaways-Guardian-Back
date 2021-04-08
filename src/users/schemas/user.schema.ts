@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Cooldown } from '../../models/cooldown';
 import { UserContext } from "../../models/user-context";
 import { CreateUserDto } from "../dto/create-user.dto";
 
@@ -27,18 +26,18 @@ export class User {
   foughtGuardians: string[];
 
   @Prop()
-  commandsCooldown: Cooldown[];
+  hitPoints: number;
 
   isBroadcaster: boolean;
 
-  constructor(userContext: UserContext, foughtGuardians: string[] = [], commandsCooldown: Cooldown[] = []) {
+  constructor(userContext: UserContext, foughtGuardians: string[] = [], hitPoints = 0) {
     this.username = userContext.username;
     this.displayName = userContext['display-name'];
     this.isModerator = userContext.mod;
     this.isSubscriber = userContext.subscriber;
     this.id = userContext['user-id'];
     this.foughtGuardians = foughtGuardians;
-    this.commandsCooldown = commandsCooldown;
+    this.hitPoints = hitPoints;
     this.isBroadcaster = !!userContext.badges.includes('broadcaster');
   }
 
@@ -50,7 +49,7 @@ export class User {
       isModerator: this.isModerator,
       isSubscriber: this.isSubscriber,
       foughtGuardians: this.foughtGuardians,
-      commandsCooldown: this.commandsCooldown
+      hitPoints: this.hitPoints
     }
   }
 }
