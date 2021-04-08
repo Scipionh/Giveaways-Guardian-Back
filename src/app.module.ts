@@ -6,7 +6,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { CommandsUtils } from './utils/commands-utils';
 import { GuardiansModule } from './guardians/guardians.module';
-import { CommandsService } from './service/commands.service';
 import { PubsubService } from './service/pubsub.service';
 import { ChatClientService } from './service/chat-client.service';
 
@@ -17,6 +16,6 @@ import { ChatClientService } from './service/chat-client.service';
     GuardiansModule
   ],
   controllers: [AppController],
-  providers: [AppService, ChatService, CommandsUtils, CommandsService, PubsubService, ChatClientService],
+  providers: [AppService, ChatService, CommandsUtils, PubsubService, ChatClientService],
 })
 export class AppModule {}

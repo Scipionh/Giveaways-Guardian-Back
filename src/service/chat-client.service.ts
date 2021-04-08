@@ -40,4 +40,8 @@ export class ChatClientService {
       console.info(`* Connected to ${addr}:${port}`);
     });
   }
+
+  say(msg: string) {
+    this.chatClient.say(this.channel, msg);
+  }
 }

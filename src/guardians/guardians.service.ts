@@ -8,6 +8,7 @@ import { CreateActualGuardianDto } from './dto/create-actual-guardian.dto';
 import { Participant } from '../models/participant';
 import { UsersService } from '../users/users.service';
 import { ChatClientService } from '../service/chat-client.service';
+import { TEXTS } from "../config/texts";
 
 @Injectable()
 export class GuardiansService {
@@ -27,6 +28,23 @@ export class GuardiansService {
   async create(createGuardianDto: CreateGuardianDto): Promise<Guardian> {
     const createdGuardian = new this.guardianModel(createGuardianDto);
     return createdGuardian.save();
+  }
+
+  instantiate(health: number, name: string): void {
+    this.hasGuardianInProgress().then(inProgress => {
+      if(!inProgress) {
+        const guardian = new Guardian(health, name);
+        this.guardian = new ActualGuardian(guardian, false, false);
+        this.create(guardian.toCreateGuardianDto())
+          .then(x => {
+            this.createActualGuardian(x).then(() => {
+              this.chatClient.say(this.chatClientService.channel, TEXTS.newGuardian.found + " " + TEXTS.newGuardian.name + " " + x.name + " " + TEXTS.newGuardian.andHas + " " + x.health + " " + TEXTS.newGuardian.healthPoints)
+            });
+          });
+      } else {
+        this.chatClient.say(this.chatClientService.channel, TEXTS.alreadyFighthting);
+      }
+    });
   }
 
   kick(userId: string): void {
@@ -127,7 +145,7 @@ export class GuardiansService {
     return this.getActualGuardian().then(x => x.actualGuardianId);
   }
 
-  private async getActualGuardian(): Promise<ActualGuardian>{
+  async getActualGuardian(): Promise<ActualGuardian>{
     return this.actualGuardianModel.findOne().exec();
   }
 

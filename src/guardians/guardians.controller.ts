@@ -1,23 +1,22 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { GuardiansService } from './guardians.service';
-import { Guardian } from './schemas/guardian.schema';
-import { CreateGuardianDto } from './dto/create-guardian.dto';
+import { ActualGuardian } from "./schemas/actual-guardian.schema";
 
 @Controller('guardians')
 export class GuardiansController {
   constructor(private readonly guardiansService: GuardiansService) {}
 
-  @Post()
-  async create(@Body() createGuardianDto: CreateGuardianDto): Promise<Guardian> {
-    return await this.guardiansService.create(createGuardianDto);
+  @Post('instantiate')
+  instantiate(@Body('health') health: number, @Body('name') name: string): void {
+    return this.guardiansService.instantiate(health, name);
   }
 
-  @Get()
-  async findAll(): Promise<Guardian[]> {
-    return await this.guardiansService.findAll();
+  @Get('actual-guardian')
+  async getActualGuardian(): Promise<ActualGuardian> {
+    return await this.guardiansService.getActualGuardian();
   }
 
-  @Get(':userId')
+  @Get('kick/:userId')
   kick(@Param('userId') userId: string): void {
     return this.guardiansService.kick(userId);
   }

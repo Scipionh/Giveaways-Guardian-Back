@@ -1,7 +1,6 @@
 import { CommandsUtils } from '../utils/commands-utils';
 import { UsersService } from '../users/users.service';
 import { Injectable } from '@nestjs/common';
-import { CommandsService } from './commands.service';
 import { GuardiansService } from '../guardians/guardians.service';
 import { TwitchPrivateMessage } from 'twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage';
 import { TEXTS } from '../config/texts';
@@ -15,7 +14,6 @@ export class ChatService {
   constructor(
     private readonly usersService: UsersService,
     private readonly commandsUtils: CommandsUtils,
-    private readonly commandsService: CommandsService,
     private readonly guardiansService: GuardiansService,
     private readonly chatClientService: ChatClientService)
   {
@@ -92,7 +90,7 @@ export class ChatService {
         // ADMIN COMMANDS
         case "instantiate": {
           if(user.isBroadcaster) {
-            this.commandsService.instantiate(commandParams);
+            // this.guardiansService.instantiate(commandParams);
           } else {
             this.chatClient.say(this.chatClientService.channel, 'PAS ADMIN FDP');
           }
