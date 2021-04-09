@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { GuardiansService } from './guardians.service';
 import { ActualGuardian } from "./schemas/actual-guardian.schema";
+import { Participant } from "../models/participant";
 
 @Controller('guardians')
 export class GuardiansController {
@@ -16,8 +17,18 @@ export class GuardiansController {
     return await this.guardiansService.getActualGuardian();
   }
 
-  @Get('kick/:userId')
-  kick(@Param('userId') userId: string): void {
-    return this.guardiansService.kick(userId);
+  @Post('kick')
+  kick(@Body('userId') userId: string, @Body('numberOfHitPoints') numberOfHitPoints: number): void {
+    return this.guardiansService.kick(userId, numberOfHitPoints);
+  }
+
+  @Get('actual-guardian/participants')
+  async getPArticipants(): Promise<Participant[]> {
+    return await this.guardiansService.getParticipants();
+  }
+
+  @Get('giveaway')
+  async giveaway(): Promise<Participant> {
+    return await this.guardiansService.giveaway();
   }
 }

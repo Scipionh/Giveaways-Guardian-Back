@@ -52,12 +52,10 @@ export class ChatService {
           break;
         }
         case "kick": {
-          this.guardiansService.kick(user.id);
+          // this.guardiansService.kick(user.id);
           /*this.usersService.canUseCommand(user.id, 'kick', 5).then(y => {
-            console.log('GUCCI_canUseCommand', y);
             if(y) {
               this.guardiansService.isDead().then(w => {
-                console.log('GUCCI_isDead', w);
                 if(!w) {
                   const damageDealt = Math.floor(Math.random() * 6) + 1;
                   this.guardiansService.removeHealth(damageDealt).then(x => {

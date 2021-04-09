@@ -18,7 +18,23 @@ export class UsersService {
     return this.userModel.find().exec();
   }
 
-  async getById(userId: string): Promise<User> {
+  async addHitpoints(userId: string, numberOfHitpoints: number): Promise<User> {
+    return this.getById(userId).then(u => {
+      return u.updateOne({hitPoints: u.hitPoints + numberOfHitpoints}).exec().then(() => {
+        return this.getById(userId);
+      });
+    })
+  }
+
+  async removeHitpoints(userId: string, numberOfHitpoints: number): Promise<User> {
+    return this.getById(userId).then(u => {
+      return u.updateOne({hitPoints: u.hitPoints - numberOfHitpoints}).exec().then(() => {
+        return this.getById(userId);
+      });
+    })
+  }
+
+  async getById(userId: string): Promise<UserDocument> {
     return this.userModel.findOne({id: userId}).exec();
   }
 
@@ -35,14 +51,20 @@ export class UsersService {
   }
 
   private async getFoughtGuardiansList(userId: string): Promise<string[]> {
-    return await this.userModel.findOne({id: userId}).exec().then(u => {
+    return await this.getById(userId).then(u => {
       return u.get('foughtGuardians');
     })
   }
 
   private async updateFoughtGuardians(userId: string, guardianId: string) {
-    this.userModel.findOne({id: userId}).exec().then(u => {
+    this.getById(userId).then(u => {
       u.updateOne({$push: {foughtGuardians: guardianId}}).exec();
+    })
+  }
+
+  canHitGuardian(userId: string, numberOfHitPoints: number): Promise<boolean> {
+    return this.getById(userId).then(u => {
+      return u.hitPoints >= numberOfHitPoints;
     })
   }
 }

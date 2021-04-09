@@ -47,18 +47,39 @@ export class GuardiansService {
     });
   }
 
-  kick(userId: string): void {
+  kick(userId: string, numberOfHitPoints: number): void {
     this.isDead().then(isDead => {
       if(!isDead) {
-        const damageDealt = Math.floor(Math.random() * 6) + 1;
-        this.removeHealth(damageDealt).then(x => {
-          this.getCurrentId().then(g => {
-            this.usersService.addParticipation(userId, g);
-            this.addParticipant(userId, damageDealt, g);
-          })
+        this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
+          if(canHit) {
+            let damageDealt = 0;
+            for (let i = 0; i < numberOfHitPoints; i++) {
+              damageDealt += Math.floor(Math.random() * 6) + 1;
+            }
+            this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
+              this.getCurrentId().then(currentGuardian => {
+                this.usersService.removeHitpoints(userId, numberOfHitPoints).then();
+                this.usersService.addParticipation(userId, currentGuardian);
+                this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints);
+              })
+            })
+          } else {
+            this.chatClient.say(this.chatClientService.channel, "TAMER");
+          }
         })
       }
     })
+  }
+
+  getParticipants(): Promise<Participant[]> {
+    return this.getCurrentId()
+      .then(currentGuardianId => this.getById(currentGuardianId))
+      .then(guardian => guardian.participants);
+  }
+
+  giveaway(): Promise<Participant> {
+    return this.getParticipants()
+      .then(participants => participants[Math.floor(Math.random() * participants.length)])
   }
 
   async createActualGuardian(createGuardianDto: Guardian): Promise<ActualGuardian> {
@@ -75,18 +96,18 @@ export class GuardiansService {
     return createdActualGuardian.save();
   }
 
-  async removeHealth(damageDealt: number): Promise<ActualGuardian> {
+  async removeHealth(damageDealt: number, numberOfHitPoints: number): Promise<ActualGuardian> {
     return await this.actualGuardianModel.findOne().exec().then(x => {
-      x.updateOne({currentHealth: (x.currentHealth - damageDealt), numberOfHits: x.numberOfHits++}).exec();
+      x.updateOne({currentHealth: (x.currentHealth - damageDealt), numberOfHits: x.numberOfHits + numberOfHitPoints}).exec();
       return x.save();
     });
   }
 
-  async addParticipant(userId: string, damageDealt: number, guardianId: string) {
+  async addParticipant(userId: string, damageDealt: number, guardianId: string, numberOfHitPoints: number) {
     return this.getById(guardianId).then(guardian => {
         if(!guardian.participants.some(el => el.userId === userId)) {
           this.usersService.getById(userId).then(u => {
-            const participant: Participant = {userId: userId, username: u.displayName, damageDealt: damageDealt, numberOfHits: 1};
+            const participant: Participant = {userId: userId, username: u.displayName, damageDealt: damageDealt, numberOfHits: numberOfHitPoints};
             guardian.updateOne({ $push: {participants: participant}}).exec();
             return guardian.save();
           })
@@ -94,7 +115,7 @@ export class GuardiansService {
           guardian.collection.findOne({"participants.userId": userId}).then(x => {
             const value = x.participants.find(y => y.userId = userId)
             guardian.collection.updateOne({"participants.userId": userId},
-              {$set: {"participants.$.damageDealt": value.damageDealt + damageDealt, "participants.$.numberOfHits": value.numberOfHits + 1}})
+              {$set: {"participants.$.damageDealt": value.damageDealt + damageDealt, "participants.$.numberOfHits": value.numberOfHits + numberOfHitPoints}})
           })
           return guardian.save();
         }

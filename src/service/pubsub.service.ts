@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
 import { clientId, secret } from '../auth-config';
 import { ApiClient } from 'twitch';
-import { PubSubClient, PubSubSubscriptionMessage } from 'twitch-pubsub-client';
+import { PubSubClient, PubSubRedemptionMessage, PubSubSubscriptionMessage } from "twitch-pubsub-client";
 import { ChatClientService } from './chat-client.service';
 
 @Injectable()
@@ -51,9 +51,9 @@ export class PubsubService {
   }
 
   private listenToRedemption = (): void => {
-    this.pubSubClient.onRedemption(140398983, (message: PubSubSubscriptionMessage) => {
+    this.pubSubClient.onRedemption(140398983, (message: PubSubRedemptionMessage) => {
       this.chatClient.say(this.chatClientService.channel, 'SPORT');
-      console.log('GUCCI_channelPointUsed');
+      console.log('GUCCI_channelPointUsed', message.rewardName, message.rewardCost);
     });
   }
 }
