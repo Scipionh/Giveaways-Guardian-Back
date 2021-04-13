@@ -2,20 +2,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from "./schemas/user.schema";
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Injectable } from '@nestjs/common';
-import * as Moment from 'moment'
+import { HttpService, Injectable } from "@nestjs/common";
+import * as fs from "fs";
+import { clientId } from "../auth-config";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>, private httpService: HttpService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
-  }
-
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
   }
 
   async addHitpoints(userId: string, numberOfHitpoints: number): Promise<User> {
@@ -36,6 +33,22 @@ export class UsersService {
 
   async getById(userId: string): Promise<UserDocument> {
     return this.userModel.findOne({id: userId}).exec();
+  }
+
+  async loadProfile(extensionData: any): Promise<User> {
+    return this.getById(extensionData['user_id'])
+      .then(user => this.getUserInfoFromTwitch(user, extensionData['user_id']))
+  }
+
+  async getUserInfoFromTwitch(user: User, userId: string): Promise<User> {
+    if (user) {
+      return user;
+    }
+    const tokenData = JSON.parse(fs.readFileSync('./src/config/tokens.json', 'UTF-8'));
+    return this.httpService.get('https://api.twitch.tv/helix/users?id=' + userId, {headers: {'client-id': clientId, 'authorization': 'Bearer ' + tokenData.accessToken}})
+      .toPromise().then((twitchUser: any) => {
+        return this.create(new User(twitchUser.data.data[0]).toCreateUserDto());
+      });
   }
 
   async updateById(userId: string, payload: any): Promise<User> {

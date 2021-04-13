@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards, Req } from "@nestjs/common";
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
+import { AuthGuard } from "../guards/auth.guard";
+import { Request } from 'express';
 
 @Controller('users')
+@UseGuards(AuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -20,6 +23,13 @@ export class UsersController {
   @Post('hitpoints/remove')
   async removeHitpoints(@Body('userId') userId: string, @Body('numberOfHitPoints') numberOfHitPoints: number): Promise<User> {
     return this.usersService.removeHitpoints(userId, numberOfHitPoints);
+  }
+
+  @Get('load-profile')
+  async loadProfile(@Req() request: Request): Promise<User> {
+    if((request as any).extension.user_id) {
+      return this.usersService.loadProfile((request as any).extension);
+    }
   }
 
   @Get(':userId')

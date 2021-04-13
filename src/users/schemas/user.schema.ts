@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { UserContext } from "../../models/user-context";
 import { CreateUserDto } from "../dto/create-user.dto";
+import { TwitchUser } from "../../models/twitch-user";
 
 export type UserDocument = User & Document;
 
@@ -30,15 +31,12 @@ export class User {
 
   isBroadcaster: boolean;
 
-  constructor(userContext: UserContext, foughtGuardians: string[] = [], hitPoints = 0) {
-    this.username = userContext.username;
-    this.displayName = userContext['display-name'];
-    this.isModerator = userContext.mod;
-    this.isSubscriber = userContext.subscriber;
-    this.id = userContext['user-id'];
+  constructor(twitchUser: TwitchUser, foughtGuardians: string[] = [], hitPoints = 0) {
+    this.username = twitchUser.login;
+    this.displayName = twitchUser.display_name;
+    this.id = twitchUser.id;
     this.foughtGuardians = foughtGuardians;
     this.hitPoints = hitPoints;
-    this.isBroadcaster = !!userContext.badges.includes('broadcaster');
   }
 
   public toCreateUserDto(): CreateUserDto {

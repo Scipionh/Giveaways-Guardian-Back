@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { GuardiansService } from './guardians.service';
 import { ActualGuardian } from "./schemas/actual-guardian.schema";
 import { Participant } from "../models/participant";
+import { AuthGuard } from "../guards/auth.guard";
+import { User } from "../users/schemas/user.schema";
 
 @Controller('guardians')
+@UseGuards(AuthGuard)
 export class GuardiansController {
   constructor(private readonly guardiansService: GuardiansService) {}
 
@@ -18,7 +21,8 @@ export class GuardiansController {
   }
 
   @Post('kick')
-  kick(@Body('userId') userId: string, @Body('numberOfHitPoints') numberOfHitPoints: number): void {
+  kick(@Body('userId') userId: string, @Body('numberOfHitPoints') numberOfHitPoints: number): Promise<User> {
+    console.log('KICK');
     return this.guardiansService.kick(userId, numberOfHitPoints);
   }
 

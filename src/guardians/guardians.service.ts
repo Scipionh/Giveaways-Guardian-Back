@@ -9,6 +9,7 @@ import { Participant } from '../models/participant';
 import { UsersService } from '../users/users.service';
 import { ChatClientService } from '../service/chat-client.service';
 import { TEXTS } from "../config/texts";
+import { User } from "../users/schemas/user.schema";
 
 @Injectable()
 export class GuardiansService {
@@ -47,20 +48,22 @@ export class GuardiansService {
     });
   }
 
-  kick(userId: string, numberOfHitPoints: number): void {
-    this.isDead().then(isDead => {
+  kick(userId: string, numberOfHitPoints: number): Promise<User> {
+    return this.isDead().then(isDead => {
       if(!isDead) {
-        this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
+        return this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
           if(canHit) {
             let damageDealt = 0;
             for (let i = 0; i < numberOfHitPoints; i++) {
               damageDealt += Math.floor(Math.random() * 6) + 1;
             }
-            this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
-              this.getCurrentId().then(currentGuardian => {
-                this.usersService.removeHitpoints(userId, numberOfHitPoints).then();
-                this.usersService.addParticipation(userId, currentGuardian);
-                this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints);
+            return this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
+              return this.getCurrentId().then(currentGuardian => {
+                return this.usersService.addParticipation(userId, currentGuardian).then(() => {
+                  return this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints).then(() => {
+                    return this.usersService.removeHitpoints(userId, numberOfHitPoints).then(user => user);
+                  })
+                })
               })
             })
           } else {

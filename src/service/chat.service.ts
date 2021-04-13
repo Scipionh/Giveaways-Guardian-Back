@@ -32,10 +32,10 @@ export class ChatService {
 
       if(!this.commandsUtils.isValidCommand(message, userContext)) return;
 
-      const user = new User(userContext);
-      this.usersService.getById(user.id).then(u => {
-        if(!u) this.usersService.create(user.toCreateUserDto());
-      });
+      // const user = new User(userContext);
+      // this.usersService.getById(user.id).then(u => {
+      //   if(!u) this.usersService.create(user.toCreateUserDto());
+      // });
 
       const commandName = this.commandsUtils.getCommandName(message, userContext);
       const commandParams = this.commandsUtils.getCommandParams(message);
@@ -87,11 +87,11 @@ export class ChatService {
 
         // ADMIN COMMANDS
         case "instantiate": {
-          if(user.isBroadcaster) {
+          // if(user.isBroadcaster) {
             // this.guardiansService.instantiate(commandParams);
-          } else {
-            this.chatClient.say(this.chatClientService.channel, 'PAS ADMIN FDP');
-          }
+          // } else {
+          //   this.chatClient.say(this.chatClientService.channel, 'PAS ADMIN FDP');
+          // }
           // instantiateBot()
           break;
         }

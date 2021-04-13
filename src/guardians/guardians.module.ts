@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from "@nestjs/common";
 import { MongooseModule } from '@nestjs/mongoose';
 import { Guardian, GuardianSchema } from './schemas/guardian.schema';
 import { GuardiansController } from './guardians.controller';
@@ -13,7 +13,8 @@ import { ChatClientService } from '../service/chat-client.service';
     { name: Guardian.name, schema: GuardianSchema },
     { name: User.name, schema: UserSchema },
     { name: ActualGuardian.name, schema: ActualGuardianSchema }
-    ])
+    ]),
+    HttpModule
   ],
   controllers: [GuardiansController],
   providers: [GuardiansService, UsersService, ChatClientService],
