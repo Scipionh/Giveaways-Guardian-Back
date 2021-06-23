@@ -34,4 +34,4 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # twitch oauth
-/src/opts.ts
+/src/config/tokens.json
