@@ -6,7 +6,7 @@ import { AuthGuard } from "../guards/auth.guard";
 import { User } from "../users/schemas/user.schema";
 
 @Controller('guardians')
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 export class GuardiansController {
   constructor(private readonly guardiansService: GuardiansService) {}
 

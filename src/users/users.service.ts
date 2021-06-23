@@ -16,8 +16,8 @@ export class UsersService {
   }
 
   async addHitpoints(userId: string, numberOfHitpoints: number): Promise<User> {
-    return this.getById(userId).then(u => {
-      return u.updateOne({hitPoints: u.hitPoints + numberOfHitpoints}).exec().then(() => {
+    return this.getById(userId).then(user => {
+      return user.updateOne({hitPoints: user.hitPoints + numberOfHitpoints}).exec().then(() => {
         return this.getById(userId);
       });
     })
@@ -31,11 +31,11 @@ export class UsersService {
     })
   }
 
-  async getById(userId: string): Promise<UserDocument> {
+  getById(userId: string): Promise<UserDocument> {
     return this.userModel.findOne({id: userId}).exec();
   }
 
-  async loadProfile(extensionData: any): Promise<User> {
+  loadProfile(extensionData: any): Promise<User> {
     return this.getById(extensionData['user_id'])
       .then(user => this.getUserInfoFromTwitch(user, extensionData['user_id']))
   }
@@ -46,38 +46,26 @@ export class UsersService {
     }
     const tokenData = JSON.parse(fs.readFileSync('./src/config/tokens.json', 'UTF-8'));
     return this.httpService.get('https://api.twitch.tv/helix/users?id=' + userId, {headers: {'client-id': clientId, 'authorization': 'Bearer ' + tokenData.accessToken}})
-      .toPromise().then((twitchUser: any) => {
-        return this.create(new User(twitchUser.data.data[0]).toCreateUserDto());
-      });
-  }
-
-  async updateById(userId: string, payload: any): Promise<User> {
-    return this.userModel.findOneAndUpdate({id: userId}, payload).exec()
+      .toPromise().then(twitchUser => this.create(new User(twitchUser.data.data[0]).toCreateUserDto()));
   }
 
   async addParticipation(userId: string, guardianId: string) {
-    this.getFoughtGuardiansList(userId).then(x => {
-      if(x.indexOf(guardianId) == -1) {
+    this.getFoughtGuardiansList(userId).then(foughtGuardiansList => {
+      if(foughtGuardiansList.indexOf(guardianId) == -1) {
         this.updateFoughtGuardians(userId, guardianId);
       }
     })
   }
 
   private async getFoughtGuardiansList(userId: string): Promise<string[]> {
-    return await this.getById(userId).then(u => {
-      return u.get('foughtGuardians');
-    })
+    return await this.getById(userId).then(user => user.get('foughtGuardians'));
   }
 
   private async updateFoughtGuardians(userId: string, guardianId: string) {
-    this.getById(userId).then(u => {
-      u.updateOne({$push: {foughtGuardians: guardianId}}).exec();
-    })
+    this.getById(userId).then(user => user.updateOne({$push: {foughtGuardians: guardianId}}).exec());
   }
 
   canHitGuardian(userId: string, numberOfHitPoints: number): Promise<boolean> {
-    return this.getById(userId).then(u => {
-      return u.hitPoints >= numberOfHitPoints;
-    })
+    return this.getById(userId).then(user => user.hitPoints >= numberOfHitPoints);
   }
 }

@@ -19,7 +19,7 @@ export class GuardiansService {
     @InjectModel(Guardian.name) private readonly guardianModel: Model<GuardianDocument>,
     @InjectModel(ActualGuardian.name) private readonly actualGuardianModel: Model<ActualGuardianDocument>,
     private readonly usersService: UsersService,
-    private readonly chatClientService: ChatClientService
+    private readonly chatClientService: ChatClientService,
   ) {
     this.chatClient = this.chatClientService.chatClient;
   }
@@ -48,6 +48,32 @@ export class GuardiansService {
     });
   }
 
+  // kick(userId: string, numberOfHitPoints: number): Promise<User> {
+  //   return this.isDead().then(isDead => {
+  //     if(!isDead) {
+  //       return this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
+  //         if(canHit) {
+  //           let damageDealt = 0;
+  //           for (let i = 0; i < numberOfHitPoints; i++) {
+  //             damageDealt += Math.floor(Math.random() * 6) + 1;
+  //           }
+  //           return this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
+  //             return this.getCurrentId().then(currentGuardian => {
+  //               return this.usersService.addParticipation(userId, currentGuardian).then(() => {
+  //                 return this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints).then(() => {
+  //                   return this.usersService.removeHitpoints(userId, numberOfHitPoints).then(user => user);
+  //                 })
+  //               })
+  //             })
+  //           })
+  //         } else {
+  //           this.chatClient.say(this.chatClientService.channel, "TAMER");
+  //         }
+  //       })
+  //     }
+  //   })
+  // }
+
   kick(userId: string, numberOfHitPoints: number): Promise<User> {
     return this.isDead().then(isDead => {
       if(!isDead) {
@@ -57,15 +83,17 @@ export class GuardiansService {
             for (let i = 0; i < numberOfHitPoints; i++) {
               damageDealt += Math.floor(Math.random() * 6) + 1;
             }
-            return this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
-              return this.getCurrentId().then(currentGuardian => {
-                return this.usersService.addParticipation(userId, currentGuardian).then(() => {
-                  return this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints).then(() => {
-                    return this.usersService.removeHitpoints(userId, numberOfHitPoints).then(user => user);
-                  })
-                })
+
+
+            return this.removeHealth(damageDealt, numberOfHitPoints)
+              .then(() => this.getCurrentId())
+              .then((currentGuardianId: string) => {
+                this.usersService.addParticipation(userId, currentGuardianId);
+                return currentGuardianId;
               })
-            })
+              .then((currentGuardianId: string) => this.addParticipant(userId, damageDealt, currentGuardianId, numberOfHitPoints))
+              .then(() => this.usersService.removeHitpoints(userId, numberOfHitPoints))
+              .then((user: User) => user)
           } else {
             this.chatClient.say(this.chatClientService.channel, "TAMER");
           }
@@ -80,12 +108,16 @@ export class GuardiansService {
       .then(guardian => guardian.participants);
   }
 
-  giveaway(): Promise<Participant> {
-    return this.getParticipants()
-      .then(participants => participants[Math.floor(Math.random() * participants.length)])
+  async giveaway(): Promise<Participant> {
+    const isDead = await this.isDead();
+    if(isDead) {
+      return this.redeemGuardian()
+        .then(() => this.getParticipants())
+        .then(participants => participants[Math.floor(Math.random() * participants.length)]);
+    }
   }
 
-  async createActualGuardian(createGuardianDto: Guardian): Promise<ActualGuardian> {
+  createActualGuardian(createGuardianDto: Guardian): Promise<ActualGuardian> {
     const actualGuardian: CreateActualGuardianDto = {
       actualGuardianId: createGuardianDto.id,
       name: createGuardianDto.name,
@@ -100,13 +132,24 @@ export class GuardiansService {
   }
 
   async removeHealth(damageDealt: number, numberOfHitPoints: number): Promise<ActualGuardian> {
-    return await this.actualGuardianModel.findOne().exec().then(x => {
-      x.updateOne({currentHealth: (x.currentHealth - damageDealt), numberOfHits: x.numberOfHits + numberOfHitPoints}).exec();
-      return x.save();
+    return await this.actualGuardianModel.findOne().exec().then(actualGuardian => {
+      const isDead = actualGuardian.health <= 0;
+      const payload = isDead
+        ? {currentHealth: (actualGuardian.currentHealth - damageDealt), numberOfHits: actualGuardian.numberOfHits + numberOfHitPoints, isDead: true}
+        : {currentHealth: (actualGuardian.currentHealth - damageDealt), numberOfHits: actualGuardian.numberOfHits + numberOfHitPoints}
+      actualGuardian.updateOne(payload).exec();
+      return actualGuardian.save();
     });
   }
 
-  async addParticipant(userId: string, damageDealt: number, guardianId: string, numberOfHitPoints: number) {
+  async redeemGuardian(): Promise<ActualGuardian> {
+    return await this.actualGuardianModel.findOne().exec().then(actualGuardian => {
+      actualGuardian.updateOne({isRedeemed: true}).exec();
+      return actualGuardian.save();
+    });
+  }
+
+  async addParticipant(userId: string, damageDealt: number, guardianId: string, numberOfHitPoints: number): Promise<GuardianDocument> {
     return this.getById(guardianId).then(guardian => {
         if(!guardian.participants.some(el => el.userId === userId)) {
           this.usersService.getById(userId).then(u => {
@@ -125,26 +168,26 @@ export class GuardiansService {
     });
   }
 
-  async resumeGuardian() {
-    this.hasGuardianInProgress().then(inProgress => {
-      if(inProgress) {
-        this.getActualGuardian().then(y => {
-          this.getById(y.actualGuardianId).then(v => {
-            this.guardian = new ActualGuardian(new Guardian(v.health, v.name, v.participants), y.isDead, y.isRedeemed)
-          })
-        });
-      }
-    })
+  // async resumeGuardian() {
+  //   this.hasGuardianInProgress().then(inProgress => {
+  //     if(inProgress) {
+  //       this.getActualGuardian().then(y => {
+  //         this.getById(y.actualGuardianId).then(v => {
+  //           this.guardian = new ActualGuardian(new Guardian(v.health, v.name, v.participants), y.isDead, y.isRedeemed)
+  //         })
+  //       });
+  //     }
+  //   })
+  // }
+
+  async resumeGuardian(): Promise<void> {
+    if(await this.hasGuardianInProgress()) {
+      this.guardian = await this.getActualGuardian();
+    }
   }
 
   hasGuardianInProgress(): Promise<boolean> {
-    return this.getActualGuardian().then(x => {
-      return !!x ? (!x.isDead && !x.isRedeemed) : false
-    })
-  }
-
-  async findAll(): Promise<Guardian[]> {
-    return this.guardianModel.find().exec();
+    return this.getActualGuardian().then(actualGuardian => !!actualGuardian ? (!actualGuardian.isDead && !actualGuardian.isRedeemed) : false);
   }
 
   async getById(guardianId: string): Promise<GuardianDocument> {
@@ -155,13 +198,11 @@ export class GuardiansService {
     return this.getActualGuardian().then(x => x.actualGuardianId);
   }
 
-  async getActualGuardian(): Promise<ActualGuardian>{
+  async getActualGuardian(): Promise<ActualGuardian> {
     return this.actualGuardianModel.findOne().exec();
   }
 
   public isDead(): Promise<boolean> {
-    return this.getActualGuardian().then(x => {
-      return !!x ? x.isDead : true
-    });
+    return this.getActualGuardian().then(actualGuardian => !!actualGuardian ? actualGuardian.isDead : true);
   }
 }
