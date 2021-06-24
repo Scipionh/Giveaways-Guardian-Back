@@ -9,7 +9,6 @@ export class AuthController {
 
   @Get(':code')
   async auth(@Param('code') code: string) {
-    console.log('GUCCI_auth', code);
     return this.authService.twitchAuth(code);
   }
 }
