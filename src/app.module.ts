@@ -8,12 +8,14 @@ import { CommandsUtils } from './utils/commands-utils';
 import { GuardiansModule } from './guardians/guardians.module';
 import { PubsubService } from './service/pubsub.service';
 import { ChatClientService } from './service/chat-client.service';
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/nest'),
     UsersModule,
-    GuardiansModule
+    GuardiansModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, ChatService, CommandsUtils, PubsubService, ChatClientService],

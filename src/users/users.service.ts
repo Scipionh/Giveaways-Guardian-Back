@@ -37,7 +37,7 @@ export class UsersService {
 
   loadProfile(extensionData: any): Promise<User> {
     return this.getById(extensionData['user_id'])
-      .then(user => this.getUserInfoFromTwitch(user, extensionData['user_id']))
+      .then(user => this.getUserInfoFromTwitch(user, extensionData['user_id']));
   }
 
   async getUserInfoFromTwitch(user: User, userId: string): Promise<User> {
