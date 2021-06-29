@@ -2,12 +2,12 @@ import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { GuardiansService } from './guardians.service';
 import { ActualGuardian } from "./schemas/actual-guardian.schema";
 import { Participant } from "../models/participant";
-import { AuthGuard } from "../guards/auth.guard";
 import { User } from "../users/schemas/user.schema";
+import { DashboardAuthGuard } from "../guards/dashboard.auth.guard";
 
-@Controller('guardians')
-// @UseGuards(AuthGuard)
-export class GuardiansController {
+@Controller('dashboard/guardians')
+@UseGuards(DashboardAuthGuard)
+export class GuardiansDashboardController {
   constructor(private readonly guardiansService: GuardiansService) {}
 
   @Post('instantiate')

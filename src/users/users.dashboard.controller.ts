@@ -2,12 +2,14 @@ import { Body, Controller, Get, Param, Post, UseGuards, Req } from "@nestjs/comm
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
-import { AuthGuard } from "../guards/auth.guard";
+import { ExtensionAuthGuard } from "../guards/extension.auth.guard";
 import { Request } from 'express';
+import { DashboardAuthGuard } from "../guards/dashboard.auth.guard";
+import { TwitchUser } from "../models/twitch-user";
 
-@Controller('users')
-@UseGuards(AuthGuard)
-export class UsersController {
+@Controller('dashboard/users')
+@UseGuards(DashboardAuthGuard)
+export class UsersDashboardController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
@@ -26,10 +28,8 @@ export class UsersController {
   }
 
   @Get('load-profile')
-  async loadProfile(@Req() request: Request): Promise<User> {
-    if((request as any).extension.user_id) {
-      return this.usersService.loadProfile((request as any).extension);
-    }
+  async loadProfile(@Req() request: Request): Promise<TwitchUser> {
+    return this.usersService.getUserInfoFromTwitchFromUserAccessToken((request as any).accessToken);
   }
 
   @Get(':userId')

@@ -1,12 +1,13 @@
 import { HttpModule, Module } from "@nestjs/common";
 import { MongooseModule } from '@nestjs/mongoose';
 import { Guardian, GuardianSchema } from './schemas/guardian.schema';
-import { GuardiansController } from './guardians.controller';
+import { GuardiansDashboardController } from './guardians.dashboard.controller';
 import { GuardiansService } from './guardians.service';
 import { ActualGuardian, ActualGuardianSchema } from './schemas/actual-guardian.schema';
 import { UsersService } from '../users/users.service';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { ChatClientService } from '../service/chat-client.service';
+import { GuardiansExtensionController } from "./guardians.extension.controller";
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -16,7 +17,7 @@ import { ChatClientService } from '../service/chat-client.service';
     ]),
     HttpModule
   ],
-  controllers: [GuardiansController],
+  controllers: [GuardiansDashboardController, GuardiansExtensionController],
   providers: [GuardiansService, UsersService, ChatClientService],
   exports: [GuardiansService]
 })

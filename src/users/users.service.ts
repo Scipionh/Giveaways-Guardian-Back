@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { HttpService, Injectable } from "@nestjs/common";
 import * as fs from "fs";
 import { clientId } from "../auth-config";
+import { TwitchUser } from "../models/twitch-user";
 
 @Injectable()
 export class UsersService {
@@ -37,16 +38,21 @@ export class UsersService {
 
   loadProfile(extensionData: any): Promise<User> {
     return this.getById(extensionData['user_id'])
-      .then(user => this.getUserInfoFromTwitch(user, extensionData['user_id']));
+      .then(user => this.getUserInfoFromTwitchFromUserId(user, extensionData['user_id']));
   }
 
-  async getUserInfoFromTwitch(user: User, userId: string): Promise<User> {
+  async getUserInfoFromTwitchFromUserId(user: User, userId: string): Promise<User> {
     if (user) {
       return user;
     }
     const tokenData = JSON.parse(fs.readFileSync('./src/config/tokens.json', 'UTF-8'));
     return this.httpService.get('https://api.twitch.tv/helix/users?id=' + userId, {headers: {'client-id': clientId, 'authorization': 'Bearer ' + tokenData.accessToken}})
       .toPromise().then(twitchUser => this.create(new User(twitchUser.data.data[0]).toCreateUserDto()));
+  }
+
+  getUserInfoFromTwitchFromUserAccessToken(accessToken: string): Promise<TwitchUser> {
+    return this.httpService.get('https://api.twitch.tv/helix/users', {headers: {'client-id': clientId, 'authorization': 'Bearer ' + accessToken}})
+      .toPromise().then(twitchUser => twitchUser.data.data[0]);
   }
 
   async addParticipation(userId: string, guardianId: string) {

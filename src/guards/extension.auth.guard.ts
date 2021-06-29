@@ -4,13 +4,12 @@ import * as jwt from 'jsonwebtoken';
 import { extensionSecret } from "../auth-config";
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class ExtensionAuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const valid = this.validateRequest(request);
-    return valid;
+    return this.validateRequest(request);
   }
 
   validateRequest(request): boolean {
