@@ -1,4 +1,4 @@
-import { HttpModule, Module } from "@nestjs/common";
+import { CacheModule, HttpModule, Module } from "@nestjs/common";
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ChatService } from './service/chat.service';
@@ -14,10 +14,11 @@ import { AuthService } from "./auth/auth.service";
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/nest'),
+    CacheModule.register(),
     UsersModule,
     GuardiansModule,
     AuthModule,
-    HttpModule
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatService, CommandsUtils, PubsubService, ChatClientService, AuthService],

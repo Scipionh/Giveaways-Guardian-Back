@@ -1,4 +1,4 @@
-import { HttpModule, Module } from "@nestjs/common";
+import { CacheModule, HttpModule, Module } from "@nestjs/common";
 import { MongooseModule } from '@nestjs/mongoose';
 import { Guardian, GuardianSchema } from './schemas/guardian.schema';
 import { GuardiansDashboardController } from './guardians.dashboard.controller';
@@ -15,7 +15,8 @@ import { GuardiansExtensionController } from "./guardians.extension.controller";
     { name: User.name, schema: UserSchema },
     { name: ActualGuardian.name, schema: ActualGuardianSchema }
     ]),
-    HttpModule
+    HttpModule,
+    CacheModule.register()
   ],
   controllers: [GuardiansDashboardController, GuardiansExtensionController],
   providers: [GuardiansService, UsersService, ChatClientService],

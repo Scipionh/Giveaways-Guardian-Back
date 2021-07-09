@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post, UseGuards, Req } from "@nestjs/comm
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
-import { ExtensionAuthGuard } from "../guards/extension.auth.guard";
 import { Request } from 'express';
 import { DashboardAuthGuard } from "../guards/dashboard.auth.guard";
 import { TwitchUser } from "../models/twitch-user";

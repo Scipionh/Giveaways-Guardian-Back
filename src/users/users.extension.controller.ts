@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, Param, UseGuards, Req } from "@nestjs/common";
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
 import { ExtensionAuthGuard } from "../guards/extension.auth.guard";
 import { Request } from 'express';

@@ -1,12 +1,12 @@
-import { Injectable, CanActivate, ExecutionContext, HttpService } from "@nestjs/common";
+import { Injectable, CanActivate, ExecutionContext, HttpService, Inject, CACHE_MANAGER } from "@nestjs/common";
+import { Cache } from "cache-manager"
 import { Observable } from 'rxjs';
-import { AuthService } from "../auth/auth.service";
 import { TwitchValidate } from "../models/twitch-validate";
 
 @Injectable()
 export class DashboardAuthGuard implements CanActivate {
 
-  constructor(private readonly http: HttpService) { }
+  constructor(private readonly http: HttpService, @Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
   canActivate(
     context: ExecutionContext,
@@ -18,12 +18,19 @@ export class DashboardAuthGuard implements CanActivate {
   async validateRequest(request): Promise<boolean> {
     if(request.headers.authorization) {
       const [type, auth] = request.headers['authorization'].split(' ');
-      if(type === 'Bearer') {
+      const isCached = await this.cacheManager.get(`${auth}.isValid`);
+      if(isCached) {
+        request.accessToken = auth;
+        return true;
+      } else if(type === 'Bearer') {
         request.accessToken = auth;
         return await this.http.get<TwitchValidate>(`https://id.twitch.tv/oauth2/validate`, {headers: {'authorization': 'OAuth ' + auth}})
           .toPromise()
-          .then(data => true)
-          .catch(error => false);
+          .then(() => {
+            this.cacheManager.set(`${auth}.isValid`, true, { ttl: 3600000 });
+            return true;
+          })
+          .catch(() => false);
       } else {
         return false;
       }
