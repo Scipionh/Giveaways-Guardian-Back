@@ -37,69 +37,44 @@ export class GuardiansService {
         const guardian = new Guardian(health, name);
         this.guardian = new ActualGuardian(guardian, false, false);
         this.create(guardian.toCreateGuardianDto())
-          .then(x => {
-            this.createActualGuardian(x).then(() => {
-              this.chatClient.say(this.chatClientService.channel, TEXTS.newGuardian.found + " " + TEXTS.newGuardian.name + " " + x.name + " " + TEXTS.newGuardian.andHas + " " + x.health + " " + TEXTS.newGuardian.healthPoints)
-            });
-          });
+          .then(guardian => this.createActualGuardian(guardian))
+          .then(actualGuardian => this.chatClient.say(
+            this.chatClientService.channel,
+            TEXTS.newGuardian.found + " " +
+            TEXTS.newGuardian.name + " " +
+            actualGuardian.name + " " +
+            TEXTS.newGuardian.andHas + " " +
+            actualGuardian.health + " " +
+            TEXTS.newGuardian.healthPoints));
       } else {
         this.chatClient.say(this.chatClientService.channel, TEXTS.alreadyFighthting);
       }
     });
   }
 
-  // kick(userId: string, numberOfHitPoints: number): Promise<User> {
-  //   return this.isDead().then(isDead => {
-  //     if(!isDead) {
-  //       return this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
-  //         if(canHit) {
-  //           let damageDealt = 0;
-  //           for (let i = 0; i < numberOfHitPoints; i++) {
-  //             damageDealt += Math.floor(Math.random() * 6) + 1;
-  //           }
-  //           return this.removeHealth(damageDealt, numberOfHitPoints).then(() => {
-  //             return this.getCurrentId().then(currentGuardian => {
-  //               return this.usersService.addParticipation(userId, currentGuardian).then(() => {
-  //                 return this.addParticipant(userId, damageDealt, currentGuardian, numberOfHitPoints).then(() => {
-  //                   return this.usersService.removeHitpoints(userId, numberOfHitPoints).then(user => user);
-  //                 })
-  //               })
-  //             })
-  //           })
-  //         } else {
-  //           this.chatClient.say(this.chatClientService.channel, "TAMER");
-  //         }
-  //       })
-  //     }
-  //   })
-  // }
-
   kick(userId: string, numberOfHitPoints: number): Promise<User> {
-    return this.isDead().then(isDead => {
-      if(!isDead) {
-        return this.usersService.canHitGuardian(userId, numberOfHitPoints).then((canHit) => {
-          if(canHit) {
-            let damageDealt = 0;
-            for (let i = 0; i < numberOfHitPoints; i++) {
-              damageDealt += Math.floor(Math.random() * 6) + 1;
-            }
-
-
-            return this.removeHealth(damageDealt, numberOfHitPoints)
-              .then(() => this.getCurrentId())
-              .then((currentGuardianId: string) => {
-                this.usersService.addParticipation(userId, currentGuardianId);
-                return currentGuardianId;
-              })
-              .then((currentGuardianId: string) => this.addParticipant(userId, damageDealt, currentGuardianId, numberOfHitPoints))
-              .then(() => this.usersService.removeHitpoints(userId, numberOfHitPoints))
-              .then((user: User) => user)
-          } else {
-            this.chatClient.say(this.chatClientService.channel, "TAMER");
+    return this.isDead()
+      .then(isDead => !isDead ? this.usersService.canHitGuardian(userId, numberOfHitPoints) : false)
+      .then(canHit => {
+        if(canHit) {
+          let damageDealt = 0;
+          for (let i = 0; i < numberOfHitPoints; i++) {
+            damageDealt += Math.floor(Math.random() * 6) + 1;
           }
-        })
-      }
-    })
+
+          return this.removeHealth(damageDealt, numberOfHitPoints)
+            .then(() => this.getCurrentId())
+            .then((currentGuardianId: string) => {
+              this.usersService.addParticipation(userId, currentGuardianId);
+              return currentGuardianId;
+            })
+            .then((currentGuardianId: string) => this.addParticipant(userId, damageDealt, currentGuardianId, numberOfHitPoints))
+            .then(() => this.usersService.removeHitpoints(userId, numberOfHitPoints))
+            .then((user: User) => user);
+        } else {
+          this.chatClient.say(this.chatClientService.channel, "YOU CAN'T DO THAT SORRY");
+        }
+      })
   }
 
   getParticipants(): Promise<Participant[]> {
@@ -167,18 +142,6 @@ export class GuardiansService {
         }
     });
   }
-
-  // async resumeGuardian() {
-  //   this.hasGuardianInProgress().then(inProgress => {
-  //     if(inProgress) {
-  //       this.getActualGuardian().then(y => {
-  //         this.getById(y.actualGuardianId).then(v => {
-  //           this.guardian = new ActualGuardian(new Guardian(v.health, v.name, v.participants), y.isDead, y.isRedeemed)
-  //         })
-  //       });
-  //     }
-  //   })
-  // }
 
   async resumeGuardian(): Promise<void> {
     if(await this.hasGuardianInProgress()) {
